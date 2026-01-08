@@ -1,35 +1,21 @@
-#!/usr/bin/python2
-
-
-
-# Image Reconstruction Of A Sinogram
-# Liam Normoyle - 14177994
-# Aaron Moloney - 14174014
-# Kieran Peake  - 14155737
-
-
-
 import numpy as np
 from skimage.transform import rotate ## Image rotation routine.
 import cv2
 import scipy.fftpack as fft
 import scipy.signal as sig
-
 from PIL import Image
-#FUNCTIONS
+
+
 def build_laminogram(radonT):
-    #Generate a laminogram by simple backprojection using the Radon Transform of an image, 'radonT'.
     laminogram = np.zeros((radonT.shape[1],radonT.shape[1]))
 
     dTheta = 180.0 / radonT.shape[0]
-
 
     for i in range(radonT.shape[0]):
         temp = np.tile(radonT[i],(radonT.shape[1],1))
         temp = rotate(temp, dTheta*i)
         laminogram += temp
     return laminogram
-
 
 def build_proj_ffts(projs):
     #Build 1-d FFTs of an array of projections, each projection 1 row of the array.
@@ -51,13 +37,7 @@ def hamming_window(projs):
     hamming = np.hamming(projs.shape[1])
     return hamming * projs
 
-
-
-
-
-
 print("Loading...")
-
 
 #PART 1
 sinogram = cv2.imread(r"C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q2\origin.jpg")
