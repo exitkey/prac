@@ -1,120 +1,100 @@
-"Imports"
-import numpy as np 
-import imutils
-from skimage.transform import rotate ## Image rotation routine
-import scipy.fftpack as fft          ## Fast Fourier Transform
-import scipy.misc                    ## Contains a package to save numpy arrays as .PNG
+#!/usr/bin/python2
 
 
 
-## Methods    
-
-
-"Radon transform method - turns an image into a sinogram (Not used for reconstruction - this"
-"is how the original sinogram was generated"
-def radon(image, steps):        
-    #Build the Radon Transform using 'steps' projections of 'image'. 
-    projections = []        ## Accumulate projections in a list.
-    dTheta = -180.0 / steps ## Angle increment for rotations.
-    
-    for i in range(steps):
-        projections.append(rotate(image, i*dTheta).sum(axis=0))
-    
-    return np.vstack(projections) # Return the projections as a sinogram
-    
-
-
-"Translate the sinogram to the frequency domain using Fourier Transform"
-def fft_translate(projs):
-    #Build 1-d FFTs of an array of projections, each projection 1 row of the array.
-    return fft.rfft(projs, axis=1)
+# Image Reconstruction Of A Sinogram
+# Liam Normoyle - 14177994
+# Aaron Moloney - 14174014
+# Kieran Peake  - 14155737
 
 
 
-"Filter the projections using a ramp filter"
-def ramp_filter(ffts):
-    #Ramp filter a 2-d array of 1-d FFTs (1-d FFTs along the rows).
-    ramp = np.floor(np.arange(0.5, ffts.shape[1]//2 + 0.1, 0.5))
-    return ffts * ramp
+import numpy as np
+from skimage.transform import rotate ## Image rotation routine.
+import cv2
+import scipy.fftpack as fft
+import scipy.signal as sig
 
-"Return to the spatial domain using inverse Fourier Transform"
-def inverse_fft_translate(operator):
-    return fft.irfft(operator, axis=1)
+from PIL import Image
+#FUNCTIONS
+def build_laminogram(radonT):
+    #Generate a laminogram by simple backprojection using the Radon Transform of an image, 'radonT'.
+    laminogram = np.zeros((radonT.shape[1],radonT.shape[1]))
+
+    dTheta = 180.0 / radonT.shape[0]
 
 
-
-"Reconstruct the image by back projecting the filtered projections (UNFINISHED)"
-def back_project(operator):
-    laminogram = np.zeros((operator.shape[1],operator.shape[1]))
-    dTheta = 180.0 / operator.shape[0]
-    for i in range(operator.shape[0]):
-        temp = np.tile(operator[i],(operator.shape[1],1))
+    for i in range(radonT.shape[0]):
+        temp = np.tile(radonT[i],(radonT.shape[1],1))
         temp = rotate(temp, dTheta*i)
         laminogram += temp
     return laminogram
 
 
-
-## Statements
-
-
-
-"Import the image as a numpy array and display the original sinogram image"
-print("Original Sinogram")
-sinogram = imutils.imread('sinogram.png')
-imutils.imshow(sinogram)
-scipy.misc.imsave('originalSinogramImage.png', sinogram)
+def build_proj_ffts(projs):
+    #Build 1-d FFTs of an array of projections, each projection 1 row of the array.
+    return fft.rfft(projs, axis=1)
 
 
-
-"Attempt to reconstruct the image directly from the sinogram without any kind of filtering"
-print("Reconstruction with no filtering")
-unfiltered_reconstruction = back_project(sinogram)
-imutils.imshow(unfiltered_reconstruction)
-scipy.misc.imsave('unfilteredReconstruction.png', unfiltered_reconstruction)
+def ramp_filter_ffts(ffts):
+    #Ramp filter a 2-d array of 1-d FFTs (1-d FFTs along the rows).
+    ramp = np.floor(np.arange(0.5, ffts.shape[1]//2 + 0.1, 0.5))
+    return ffts * ramp
 
 
-
-"Use the FFT to translate the sinogram to the Frequency Domain and print the output"
-print("Frequency Domain representation of sinogram")
-frequency_domain_sinogram = fft_translate(sinogram)
-imutils.imshow(frequency_domain_sinogram)
-scipy.misc.imsave('frequencyDomainRepresentationOfSinogram.png', 
-                  frequency_domain_sinogram)
+def build_proj_iffts(projs):
+    #Build 1-d FFTs of an array of projections, each projection 1 row of the array.
+    return fft.irfft(projs, axis=1)
 
 
-
-"Filter the frequency domain projections by multiplying each one by the frequency domain ramp filter"
-print("Frequency domain projections multipled with a ramp filter")
-filtered_frequency_domain_sinogram = ramp_filter(frequency_domain_sinogram)
-imutils.imshow(filtered_frequency_domain_sinogram)
-scipy.misc.imsave('frequencyDomainProjectionsMultipledWithARampFilter.png', 
-                  filtered_frequency_domain_sinogram)
-
-
-
-"Use the inverse FFT to return to the spatial domain"
-print("Spatial domain representation of ramp filtered sinogram")
-filtered_spatial_domain_sinogram = inverse_fft_translate(filtered_frequency_domain_sinogram)
-imutils.imshow(filtered_spatial_domain_sinogram)
-scipy.misc.imsave('spatialDomainRepresentationOfRampFilteredSinogram.png', 
-                  filtered_spatial_domain_sinogram)
+def hamming_window(projs):
+    hamming = np.hamming(projs.shape[1])
+    return hamming * projs
 
 
 
 
-"Re-construct the original 2D image by back-projecting the filtered projections"
-print("Original, reconstructed image")
-reconstructed_image = back_project(filtered_spatial_domain_sinogram)
-imutils.imshow(reconstructed_image)
-scipy.misc.imsave('originalReconstructedImage.png', 
-                  reconstructed_image)
 
 
-"Hamming-Windowed Ramp Filter"
-print("Hamming-Windowed reconstructed image")
-window = np.hamming(566)
-hamming = reconstructed_image * window
-imutils.imshow(hamming)
-scipy.misc.imsave('hammingWindowedReconstructedImage.png', 
-                  hamming)
+print("Loading...")
+
+
+#PART 1
+sinogram = cv2.imread(r"C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q2\origin.jpg")
+sinogram = cv2.cvtColor(sinogram, cv2.COLOR_BGR2GRAY)
+sino_lam_part1 = build_laminogram(sinogram)
+image1 = sino_lam_part1/sino_lam_part1.max()
+print("Done calculating part 1")
+
+
+#PART 2
+sino_fft = build_proj_ffts(sinogram)
+ramp_sino = ramp_filter_ffts(sino_fft)
+sino_ifft_part2 = build_proj_iffts(ramp_sino)
+sino_lam_part2 = build_laminogram(sino_ifft_part2)
+image2 = sino_lam_part2/sino_lam_part2.max()
+print("Done calculating part 2")
+
+
+#PART 3
+ham_sino = hamming_window(ramp_sino)
+sino_ifft_part3 = build_proj_iffts(ham_sino)
+sino_lam_part3 = build_laminogram(sino_ifft_part3)
+image3 = sino_lam_part3/sino_lam_part3.max()
+print("Done calculating part 3")
+
+
+print("Press enter on image to progress through images")
+
+
+cv2.imshow('Original Image',sinogram)
+cv2.waitKey(0)
+
+cv2.imshow("Part 1: Sinogram reconstruction from backprojections" ,image1)
+cv2.waitKey(0)
+
+cv2.imshow("Part 2: Sinogram reconstruction from backprojections" ,image2)
+cv2.waitKey(0)
+
+cv2.imshow("Part 3: Sinogram reconstruction from backprojections" ,image3)
+cv2.waitKey(0)
