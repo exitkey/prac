@@ -18,18 +18,15 @@ def build_laminogram(radonT):
     return laminogram
 
 def build_proj_ffts(projs):
-    #Build 1-d FFTs of an array of projections, each projection 1 row of the array.
     return fft.rfft(projs, axis=1)
 
 
 def ramp_filter_ffts(ffts):
-    #Ramp filter a 2-d array of 1-d FFTs (1-d FFTs along the rows).
     ramp = np.floor(np.arange(0.5, ffts.shape[1]//2 + 0.1, 0.5))
     return ffts * ramp
 
 
 def build_proj_iffts(projs):
-    #Build 1-d FFTs of an array of projections, each projection 1 row of the array.
     return fft.irfft(projs, axis=1)
 
 
