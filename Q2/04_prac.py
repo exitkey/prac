@@ -1,0 +1,100 @@
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+from skimage.transform import radon
+
+def circular_fov_mask(img: np.ndarray) -> np.ndarray:
+    """원형 FOV 밖을 0으로 만드는 마스크(CT 팬텀/시야 제한용)."""
+    h, w = img.shape
+    cy, cx = h // 2, w // 2
+    r = min(h, w) // 2
+
+    y, x = np.ogrid[:h, :w]
+    outside = (x - cx) ** 2 + (y - cy) ** 2 > r ** 2
+
+    out = img.copy()
+    out[outside] = 0
+    return out
+
+def show_sinogram_like_example(
+    image_path: str,
+    pixel_size_mm: float = 1.0,   # <-- 여기만 바꾸면 r축(mm) 스케일이 맞음
+    n_angles: int | None = None,  # None이면 180(0~179도) 사용
+    apply_circle_mask: bool = True,
+):
+    # 1) 이미지 로드 (grayscale)
+    img_u8 = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img_u8 is None:
+        raise FileNotFoundError(f"이미지를 찾을 수 없습니다: {image_path}")
+
+    # 2) float 변환 (radon에 넣기 편하게)
+    img = img_u8.astype(np.float32)
+
+    # 3) 원형 FOV 마스크(선택)
+    if apply_circle_mask:
+        img = circular_fov_mask(img)
+
+    # 4) 각도(theta) 설정
+    if n_angles is None:
+        # 너가 원한 오른쪽 그림 느낌(0~180 미만, 1도 간격)
+        theta = np.linspace(0.0, 180.0, 180, endpoint=False)
+    else:
+        theta = np.linspace(0.0, 180.0, n_angles, endpoint=False)
+
+    # 5) Radon transform -> sinogram
+    # circle=False: 우리가 직접 마스크를 적용했으니 False로 둬도 OK
+    sino = radon(img, theta=theta, circle=False)  # shape: (num_r, num_angles)
+
+    # 6) 플롯용으로 (phi, r) 형태로 transpose
+    # 오른쪽 예시처럼 y축=각도(phi), x축=r 이 되게 함
+    sino_plot = sino.T  # shape: (num_angles, num_r)
+
+    # 7) 축 단위(mm, deg) 만들기 위한 extent 계산
+    h, w = img.shape
+    # 이미지 좌표(mm): 중심 기준 대략 [-W/2, W/2], [-H/2, H/2]
+    x_extent_mm = (-(w / 2) * pixel_size_mm, (w / 2) * pixel_size_mm)
+    y_extent_mm = (-(h / 2) * pixel_size_mm, (h / 2) * pixel_size_mm)
+
+    # radon의 r축 샘플 개수 = sino.shape[0]
+    num_r = sino.shape[0]
+    # r축(mm): 대략 중심 기준으로 [-R, +R]로 놓고 보기 좋게 맞춤
+    r_max_mm = (num_r / 2) * pixel_size_mm
+    r_extent_mm = (-r_max_mm, r_max_mm)
+
+    # 8) 시각화 (원본 + sinogram)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4.5))
+
+    ax1.set_title("Original")
+    ax1.set_xlabel("x [mm]")
+    ax1.set_ylabel("y [mm]")
+    ax1.imshow(
+        img,
+        cmap="gray",
+        extent=(x_extent_mm[0], x_extent_mm[1], y_extent_mm[0], y_extent_mm[1]),
+        origin="lower",
+        interpolation="nearest",
+    )
+
+    ax2.set_title("Radon transform (Sinogram)")
+    ax2.set_xlabel("r [mm]")
+    ax2.set_ylabel(r"$\phi$ [degree]")
+    ax2.imshow(
+        sino_plot,
+        cmap="gray",
+        extent=(r_extent_mm[0], r_extent_mm[1], theta[0], theta[-1]),
+        origin="lower",
+        aspect="auto",
+        interpolation="nearest",
+    )
+
+    plt.tight_layout()
+    plt.show()
+
+# ===== 사용 예시 =====
+if __name__ == "__main__":
+    show_sinogram_like_example(
+        image_path=r"C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q2\origin.jpg",
+        pixel_size_mm=1.0,      # <-- 실제 mm/px로 바꾸면 축이 딱 맞음
+        n_angles=180,           # 오른쪽 예시 느낌
+        apply_circle_mask=True, # 원 밖 0 처리(권장)
+    )
