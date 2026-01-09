@@ -7,9 +7,9 @@ pixel_size_mm=1.0
 n_angles=180
 
 img_u8 = cv2.imread(r"C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q2\origin_circle.png", cv2.IMREAD_GRAYSCALE)
-img = img_u8.astype(np.float32) 
+img = img_u8.astype(np.float32)
 
-theta = np.linspace(0.0, 180.0, 180, endpoint=False) 
+theta = np.linspace(0.0, 180.0, 180, endpoint=False)
 sino = radon(img, theta=theta, circle=False)
 sino_plot = sino.T
 
@@ -40,8 +40,8 @@ ax2.imshow(
     sino_plot,
     cmap="gray",
     extent=(r_extent_mm[0], r_extent_mm[1], theta[0], theta[-1]),
-    origin="lower", 
-    aspect="auto", 
+    origin="lower",
+    aspect="auto",
     interpolation="nearest",
     )
 
