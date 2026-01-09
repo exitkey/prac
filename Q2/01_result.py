@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from skimage.transform import radon, rescale
 import cv2
 
-image = cv2.imread(r"C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q2\origin.jpg", flags = 0)
-image = rescale(image, scale=0.4, mode='reflect', channel_axis=None)
+image = cv2.imread(r"C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q2\origin_circle.png", flags = 0)
+# image = rescale(image, scale=0.4, mode='reflect', channel_axis=None)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4.5))
 

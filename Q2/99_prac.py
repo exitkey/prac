@@ -1,7 +1,3 @@
-print("==============================")
-print("1. 프로그램 시작! (이게 보이면 파이썬은 정상)")
-print("==============================")
-
 import numpy as np
 import cv2
 from skimage.transform import radon
