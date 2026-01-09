@@ -4,23 +4,23 @@ import matplotlib.pyplot as plt
 from skimage.transform import radon
 
 # 원형 FOV 밖을 0으로 만드는 마스크
-def circular_fov_mask(img: np.ndarray):
-    h, w = img.shape
-    cy, cx = h // 2, w // 2
-    r = min(h, w) // 2
+# def circular_fov_mask(img: np.ndarray):
+#     h, w = img.shape
+#     cy, cx = h // 2, w // 2
+#     r = min(h, w) // 2
 
-    y, x = np.ogrid[:h, :w] # 메모리 덜 쓰는 좌표 격자 생성
-    outside = (x - cx) ** 2 + (y - cy) ** 2 > r ** 2
+#     y, x = np.ogrid[:h, :w] # 메모리 덜 쓰는 좌표 격자 생성
+#     outside = (x - cx) ** 2 + (y - cy) ** 2 > r ** 2
 
-    out = img.copy() # 복사
-    out[outside] = 0 
-    return out
+#     out = img.copy() # 복사
+#     out[outside] = 0 
+#     return out
 
 def show_sinogram_like_example(
     image_path: str,
     pixel_size_mm: float = 1.0,   # 1픽셀이 몇 mm인지, 여기만 바꾸면 r축(mm) 스케일이 맞음
     n_angles: int | None = None,  # None이면 180(0~179도) 사용
-    apply_circle_mask: bool = True, # True면 원형 마스크 적용
+   # apply_circle_mask: bool = True, # True면 원형 마스크 적용
 ):
     
     # 1) 이미지 로드 (grayscal)
@@ -32,8 +32,8 @@ def show_sinogram_like_example(
     img = img_u8.astype(np.float32) # radon은 float 입력이 더 자연스러움(소수점), uint8은 연산 중 오버플로/정밀도 이슈가 생길 수 있음
 
     # 3) 원형 FOV 마스크(선택)
-    if apply_circle_mask:
-        img = circular_fov_mask(img)
+    # if apply_circle_mask:
+    #     img = circular_fov_mask(img)
 
     # 4) 각도(theta) 설정
     if n_angles is None:
@@ -94,8 +94,8 @@ def show_sinogram_like_example(
 # ===== 사용 예시 =====
 if __name__ == "__main__":
     show_sinogram_like_example(
-        image_path=r"C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q2\origin.jpg",
+        image_path=r"C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q2\origin_circle.png",
         pixel_size_mm=1.0,      # <-- 실제 mm/px로 바꾸면 축이 딱 맞음
         n_angles=180,           # 오른쪽 예시 느낌
-        apply_circle_mask=True, # 원 밖 0 처리(권장)
+        #apply_circle_mask=True, # 원 밖 0 처리(권장)
     )

@@ -3,18 +3,18 @@ import cv2
 import matplotlib.pyplot as plt
 from skimage.transform import radon
 
-# def circular_fov_mask(img: np.ndarray):
-#     """원형 FOV 밖을 0으로 만드는 마스크(CT 팬텀/시야 제한용)."""
-#     h, w = img.shape
-#     cy, cx = h // 2, w // 2
-#     r = min(h, w) // 2
+def circular_fov_mask(img: np.ndarray):
+    """원형 FOV 밖을 0으로 만드는 마스크(CT 팬텀/시야 제한용)."""
+    h, w = img.shape
+    cy, cx = h // 2, w // 2
+    r = min(h, w) // 2
 
-#     y, x = np.ogrid[:h, :w]
-#     outside = (x - cx) ** 2 + (y - cy) ** 2 > r ** 2
+    y, x = np.ogrid[:h, :w]
+    outside = (x - cx) ** 2 + (y - cy) ** 2 > r ** 2
 
-#     out = img.copy()
-#     out[outside] = 0
-#     return out
+    out = img.copy()
+    out[outside] = 0
+    return out
 
 def show_sinogram_like_example(
     image_path: str,
@@ -28,8 +28,8 @@ def show_sinogram_like_example(
     
     img = img_u8.astype(np.float32)
 
-    # if apply_circle_mask:
-    #     img = circular_fov_mask(img)
+    if apply_circle_mask:
+        img = circular_fov_mask(img)
 
     if n_angles is None:
         theta = np.linspace(0.0, 180.0, 180, endpoint=False)
