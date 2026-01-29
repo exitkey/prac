@@ -1,4 +1,4 @@
-% input image
+% (a). Degraded image
 image = imread("C:\Users\HEECHEOL\Desktop\grad\05_DL\02_DL\Q1\Degraded image.jpg");
 img = im2gray(image);
 
@@ -17,9 +17,9 @@ sobel = edge(img, "sobel");
 smoothing = smoothdata(img);
 
 % (f). (c).*(e)
-mask = laplacian_mask .* smoothing;
+f = laplacian_mask * smoothing;
 
-% (g). Synthesized
+% (g). Synthesized image
 Synthesized = img + sobel;
 
 % (h). power-law(gamma) transformation
@@ -31,6 +31,6 @@ subplot(2, 4, 2), imshow(laplacian), title('(b). Laplacian gradient image')
 subplot(2, 4, 3), imshow(laplacian_mask), title('(c). Laplacian masking')
 subplot(2, 4, 4), imshow(sobel), title('(d). sobel gradient')
 subplot(2, 4, 5), imshow(smoothing), title('(e). smoothing(sobel gradient image)')
-subplot(2, 4, 6), imshow(mask), title('(f). (c).*(e)')
+subplot(2, 4, 6), imshow(f), title('(f). (c).*(e)')
 subplot(2, 4, 7), imshow(Synthesized), title('(g). Synthesized image')
 subplot(2, 4, 8), imshow(gamma), title('(h). power-law(gamma) transformation')

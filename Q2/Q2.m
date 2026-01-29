@@ -7,8 +7,7 @@ theta = 0:180;
 figure
 R_T = R';
 imagesc(xp, theta, R_T)
-R_rot = rot90(R);
-title("Radon transform(Sinogram)")
+title("Sinogram")
 axis xy
 colormap(gray)
 colorbar
