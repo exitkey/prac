@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt # 'matplotlib'이라는 라이브러리에�
 import textwrap
 
 # (a) Degraded image
-img = cv2.imread('C:/Users/HEECHEOL/Desktop/grad/05_DL/01_DL/Q1_251229/Degraded image.jpg', flags=0)
+img = cv2.imread("C:\\Users\\HEECHEOL\\Desktop\\grad\\05_DL\\02_DL\\Q1\\Degraded image.jpg", flags=0)
 
 # (b) Laplacian gradient image
 laplacian = cv2.Laplacian(img, cv2.CV_64F)

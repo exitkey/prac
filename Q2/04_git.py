@@ -1,1 +1,0 @@
-gh repo clone IanB14/Sinogram-to-Image
